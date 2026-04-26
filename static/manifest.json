@@ -1,0 +1,25 @@
+{
+  "name": "TECHCOIN Ecosystem",
+  "short_name": "TECHCOIN",
+  "description": "Blockchain révolutionnaire ultra-rapide",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#00ff88",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://i.imgur.com/8QfQX8L.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://i.imgur.com/8QfQX8L.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
+ 
+ 
+4. *Descends en bas* → Commit changes → Create static/manifest.json
