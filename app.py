@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template_string
+from flask import Flask, request, render_template_string, send_from_directory
 import os
 
 app = Flask(__name__)
@@ -12,6 +12,12 @@ def render_page(content):
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TECHCOIN</title>
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#00ff88">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="https://i.imgur.com/8QfQX8L.png">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -49,6 +55,18 @@ def render_page(content):
         h2 { font-family: 'Orbitron', sans-serif; color: #00ff88; margin-bottom: 20px; }
         nav { text-align: center; padding: 20px; }
         nav a { color: #00ccff; margin: 0 15px; text-decoration: none; font-weight: 700; }
+        #installBtn { 
+            position: fixed; 
+            bottom: 20px; 
+            right: 20px; 
+            z-index: 999;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(0,255,136,0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(0,255,136,0); }
+            100% { box-shadow: 0 0 0 0 rgba(0,255,136,0); }
+        }
     </style>
 </head>
 <body>
@@ -59,6 +77,27 @@ def render_page(content):
         <a href="/stats">Stats</a>
     </nav>
     ''' + content + '''
+    <button id="installBtn" class="btn" style="display:none">📱 Installer TECHCOIN</button>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/static/service-worker.js');
+}
+        let deferredPrompt;
+        const installBtn = document.getElementById('installBtn');
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            installBtn.style.display = 'block';
+        });
+        installBtn.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                await deferredPrompt.userChoice;
+                deferredPrompt = null;
+                installBtn.style.display = 'none';
+            }
+        });
+    </script>
 </body>
 </html>
     ''')
@@ -92,7 +131,7 @@ def wallet():
             TC1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh
         </div>
         <div class="balance">{user.balance:.4f} TC</div>
-<p style="text-align:center;color:#999">≈ ${(user.balance * 0.85):.2f} USD</p>
+        <p style="text-align:center;color:#999">≈ ${(user.balance * 0.85):.2f} USD</p>
         <div class="grid">
             <button class="btn">Envoyer</button>
             <button class="btn">Recevoir</button>
@@ -145,7 +184,6 @@ def stats():
     </div>
     """
     return render_page(content)
-
 @app.route('/faucet')
 def faucet():
     content = f"""
@@ -163,6 +201,10 @@ def faucet():
     </div>
     """
     return render_page(content)
+
+@app.route('/static/<path:filename>')
+def static_files(filename):
+    return send_from_directory('static', filename)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=10000, debug=False)
