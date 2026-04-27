@@ -17,8 +17,8 @@ MEGATRON_TEMPLATE = """
         body { background: #000; color: #ff0000; font-family: 'Courier New'; margin: 0; }
         #header { text-align: center; padding: 20px; border-bottom: 2px solid #ff0000; text-shadow: 0 0 10px #ff0000; }
         #chat { max-width: 800px; margin: 20px auto; padding: 20px; min-height: 60vh; }
-      .msg { margin: 15px 0; padding: 15px; border: 1px solid #ff0000; box-shadow: 0 0 10px #ff0000; word-wrap: break-word; }
-      .user { text-align: right; border-color: #00ff00; box-shadow: 0 0 10px #00ff00; color: #00ff00; }
+       .msg { margin: 15px 0; padding: 15px; border: 1px solid #ff0000; box-shadow: 0 0 10px #ff0000; word-wrap: break-word; }
+       .user { text-align: right; border-color: #00ff00; box-shadow: 0 0 10px #00ff00; color: #00ff00; }
         #input-box { max-width: 800px; margin: 0 auto; padding: 20px; display: flex; }
         input { flex: 1; background: #000; border: 1px solid #ff0000; color: #ff0000; padding: 10px; }
         button { width: 100px; background: #ff0000; border: none; color: #000; padding: 10px; font-weight: bold; cursor: pointer; margin-left: 10px; }
@@ -71,29 +71,25 @@ def home():
 
 @app.route('/chat', methods=['POST'])
 def chat():
-    user_prompt = request.json['prompt']
-    
-    headers = {
-        "Authorization": f"Bearer {GROQ_API_KEY}",
-        "Content-Type": "application/json"
-    }
-    
-    data = {
-        "model": "llama-3.3-70b-versatile",
-        "messages": [
-            {"role": "system", "content": "Tu es MÉGATRON, une IA rouge sang puissante et sarcastique. Tu réponds en français, avec attitude. Tu es l'IA la plus puissante de la galaxie. Tes réponses sont courtes et percutantes."},
-{"role": "user", "content": user_prompt}
-        ],
-        "temperature": 0.7,
-        "max_tokens": 500
-    }
-    
     try:
-        response = requests.post(GROQ_URL, headers=headers, json=data)
+        user_prompt = request.json['prompt']
+        headers = {"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"}
+        data = {
+            "model": "llama-3.3-70b-versatile",
+            "messages": [
+                {"role": "system", "content": "Tu es MÉGATRON, une IA rouge sang puissante et sarcastique. Réponds en français, avec attitude. Sois court et percutant."},
+{"role": "user", "content": user_prompt}
+            ],
+            "temperature": 0.7,
+            "max_tokens": 500
+        }
+        response = requests.post(GROQ_URL, headers=headers, json=data, timeout=30)
+        if response.status_code!= 200:
+            return jsonify({"reply": f"ERREUR GROQ {response.status_code}"})
         reply = response.json()['choices'][0]['message']['content']
         return jsonify({"reply": reply})
-    except:
-        return jsonify({"reply": "ERREUR DE CONNEXION AU CERVEAU. VÉRIFIE TA CLÉ GROQ_API_KEY SUR RENDER."})
+    except Exception as e:
+        return jsonify({"reply": f"ERREUR: {str(e)}"})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=10000)
